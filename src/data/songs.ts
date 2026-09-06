@@ -1,4 +1,4 @@
-// Dhun song database - curated Bollywood catalogue.
+// DhunYaad song database - curated Bollywood catalogue.
 // Fields: t=title, m=movie, y=year, s=singers, a=actors (on screen), md=music director,
 // l=famous lyric line (romanized), d=devanagari line, sc=iconic scene descriptions, mo=moods.
 export interface Song {

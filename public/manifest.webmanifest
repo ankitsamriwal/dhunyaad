@@ -1,7 +1,7 @@
 {
-  "name": "Dhun - Bollywood Song Finder",
-  "short_name": "Dhun",
-  "description": "Hum it, type a lyric, or describe the scene. Dhun finds the Bollywood song - film, singer, and all.",
+  "name": "DhunYaad - Bollywood Song Finder",
+  "short_name": "DhunYaad",
+  "description": "Hum it, type a lyric, or describe the scene. DhunYaad finds the Bollywood song - film, singer, and all.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

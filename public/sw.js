@@ -1,5 +1,5 @@
-// Dhun service worker - offline-capable app shell.
-const CACHE = "dhun-v1";
+// DhunYaad service worker - offline-capable app shell.
+const CACHE = "dhunyaad-v1";
 const SHELL = ["/", "/index.html", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {

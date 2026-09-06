@@ -1,6 +1,6 @@
-# Dhun — Bollywood-first song recognition
+# DhunYaad — Bollywood-first song recognition
 
-Gaana yaad hai, naam nahi? Hum it, type half a lyric (Romanized or Devanagari), or describe the scene ("SRK on a train"). Dhun answers with the song, the film, and the singer — filmi-first.
+Gaana yaad hai, naam nahi? Hum it, type half a lyric (Romanized or Devanagari), or describe the scene ("SRK on a train"). DhunYaad answers with the song, the film, and the singer — filmi-first.
 
 ## What works today
 - **Hum capture** — real microphone recording with live waveform (MediaRecorder + Web Audio analyser)

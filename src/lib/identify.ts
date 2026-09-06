@@ -96,7 +96,7 @@ export function identifyByText(query: string, mode: "lyric" | "scene", hints?: H
   }
   const max = results[0]?.score ?? 1;
   return {
-    provider: mode === "lyric" ? "Dhun lyric index" : "Dhun scene index",
+    provider: mode === "lyric" ? "DhunYaad lyric index" : "DhunYaad scene index",
     demo: false,
     matches: results.map((r) => ({
       song: r.song,

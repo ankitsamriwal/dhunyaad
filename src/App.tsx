@@ -69,7 +69,7 @@ export default function App() {
       <header className="topbar">
         <button className="brand" onClick={() => setScreen("home")}>
           <span className="brand-mark">ध</span>
-          <span className="brand-name">Dhun</span>
+          <span className="brand-name">DhunYaad</span>
         </button>
         <nav className="topnav">
           <button className={screen === "search" ? "on" : ""} onClick={() => setScreen("search")}>Search</button>
@@ -83,7 +83,7 @@ export default function App() {
           <section className="hero">
             <div className="hero-kicker">Bollywood-first song recognition</div>
             <h1 className="hero-title">Gaana yaad hai,<br /><em>naam nahi?</em></h1>
-            <p className="hero-sub">Hum it, type half a lyric, or describe the scene. Dhun tells you the song, the film, and who sang it.</p>
+            <p className="hero-sub">Hum it, type half a lyric, or describe the scene. DhunYaad tells you the song, the film, and who sang it.</p>
             <button className="hum-button" onClick={() => setCapturing(true)}>
               <span className="hum-button-ring" />
               <span className="hum-button-label">🎙<br />Hum it</span>
@@ -199,7 +199,7 @@ export default function App() {
           <h2 className="section-title">The humming engine: pilot-gated</h2>
           <div className="pilot-card">
             <h3>Where things stand</h3>
-            <p>Everything in Dhun works today except true melody matching. Humming recognition is wired behind a provider interface (<code>MusicIdProvider</code>) and currently served by a clearly-labelled demo matcher.</p>
+            <p>Everything in DhunYaad works today except true melody matching. Humming recognition is wired behind a provider interface (<code>MusicIdProvider</code>) and currently served by a clearly-labelled demo matcher.</p>
             <h3>Why it's gated</h3>
             <p>Only one mature commercial humming API exists - ACRCloud query-by-humming - and its public humming database does not list Hindi. Google's hum-to-search has no public API at all. So Bollywood humming needs ACRCloud's custom-database option, and nobody should pay for that before it is proven on Bollywood melodies.</p>
             <h3>The go / no-go gate</h3>
