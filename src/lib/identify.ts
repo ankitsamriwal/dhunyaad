@@ -70,19 +70,86 @@ export class DemoHumProvider implements MusicIdProvider {
   }
 }
 
-// ACRCloud query-by-humming provider - stubbed, no network calls.
-// Flipping this on requires: ACRCloud account, custom Bollywood reference DB
-// (the 500-track pilot), and a small server proxy so credentials never ship
-// to the client. See PILOT.md.
+// ACRCloud query-by-humming provider - live via the /api/identify proxy.
+// Credentials stay server-side (Vercel env vars); the browser only sends audio.
+interface AcrMatch {
+  title: string;
+  artists: string[];
+  album: string;
+  score: number;
+  release_date: string;
+  acrid: string;
+  youtube: string | null;
+  spotify: string | null;
+}
+
+function songFromAcr(m: AcrMatch, i: number): Song {
+  const year = Number((m.release_date || "").slice(0, 4)) || 0;
+  return {
+    id: "acr-" + (m.acrid || i),
+    t: m.title,
+    m: m.album || "Hindi music",
+    y: year,
+    s: m.artists.length ? m.artists : ["Unknown artist"],
+    a: [],
+    l: "",
+    mo: [],
+  };
+}
+
+async function blobToBase64(blob: Blob): Promise<string> {
+  const buf = new Uint8Array(await blob.arrayBuffer());
+  let bin = "";
+  const CHUNK = 0x8000;
+  for (let i = 0; i < buf.length; i += CHUNK) bin += String.fromCharCode(...buf.subarray(i, i + CHUNK));
+  return btoa(bin);
+}
+
 export class AcrCloudHumProvider implements MusicIdProvider {
-  readonly name = "ACRCloud (query-by-humming)";
+  readonly name = "ACRCloud humming ID - Bollywood pilot database";
   readonly isDemo = false;
-  private endpoint: string;
-  private token: string;
-  constructor(endpoint: string, token: string) { this.endpoint = endpoint; this.token = token; }
-  async identify(): Promise<IdentifyOutcome> {
-    void this.endpoint; void this.token;
-    throw new Error("ACRCloud provider is not configured yet - pending the Bollywood pilot. See PILOT.md.");
+
+  async identify(audio: Blob, _durationMs: number, _hints?: Hints): Promise<IdentifyOutcome> {
+    let data: { code?: number; msg?: string; matches?: AcrMatch[]; error?: string } | null = null;
+    try {
+      const audio_b64 = await blobToBase64(audio);
+      const r = await fetch("/api/identify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audio_b64, mime: audio.type || "audio/webm" }),
+      });
+      data = await r.json();
+    } catch {
+      data = null;
+    }
+    if (!data) {
+      return {
+        provider: this.name, demo: false, matches: [],
+        message: "Couldn't reach the recognition service. Check your connection and try again.",
+      };
+    }
+    if (data.code === 0 && data.matches && data.matches.length > 0) {
+      return {
+        provider: this.name,
+        demo: false,
+        matches: data.matches.map((m, i) => ({
+          song: songFromAcr(m, i),
+          confidence: Math.max(5, Math.min(98, m.score)),
+          note: m.album ? `Album: ${m.album}` : undefined,
+        })),
+      };
+    }
+    let message: string;
+    if (data.code === 1001) {
+      message = "No match for that one. Hum the most hummable part (the chorus), 6-10 seconds, steady and clear - or try the lyric / scene search.";
+    } else if (data.code === 2004 || data.error === "too_short") {
+      message = "Couldn't hear a clear melody. Hum a little longer - 6-10 seconds is the sweet spot - and stay close to the mic.";
+    } else if (data.error === "not_configured") {
+      message = "Humming recognition is being configured right now. Lyric and scene search work today.";
+    } else {
+      message = "The recognition service hiccuped. Give it another go in a moment.";
+    }
+    return { provider: this.name, demo: false, matches: [], message };
   }
 }
 
@@ -105,9 +172,9 @@ export class PilotHumProvider implements MusicIdProvider {
   }
 }
 
-// Active provider: pilot notice while the ACRCloud go/no-go pilot runs.
-// Flip to AcrCloudHumProvider (via the server proxy) on a "go" verdict.
-export const activeProvider: MusicIdProvider = new PilotHumProvider();
+// Active provider: live ACRCloud humming recognition via the server proxy.
+// PilotHumProvider remains above as the honest fallback if the trial lapses.
+export const activeProvider: MusicIdProvider = new AcrCloudHumProvider();
 
 // Lyric/scene "identify" path used when the user types instead of humming.
 export function identifyByText(query: string, mode: "lyric" | "scene", hints?: Hints): IdentifyOutcome {

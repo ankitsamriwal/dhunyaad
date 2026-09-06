@@ -40,11 +40,13 @@ export default function App() {
 
   const onHumDone = (blob: Blob, ms: number) => {
     setCapturing(false); setAnalyzing(true); setLastAudio({ blob, ms });
-    setTimeout(async () => {
-      const o = await activeProvider.identify(blob, ms);
-      setAnalyzing(false);
-      goResults(o, "hum", `hummed ${Math.round(ms / 1000)}s`);
-    }, 1600);
+    activeProvider
+      .identify(blob, ms)
+      .then((o) => { setAnalyzing(false); goResults(o, "hum", `hummed ${Math.round(ms / 1000)}s`); })
+      .catch(() => {
+        setAnalyzing(false);
+        goResults({ provider: "Humming recognition", demo: false, matches: [], message: "Something went wrong on our side. Try again in a moment." }, "hum", `hummed ${Math.round(ms / 1000)}s`);
+      });
   };
 
   const runTextSearch = (q: string, mode: SearchMode) => {
@@ -87,7 +89,7 @@ export default function App() {
             <button className="hum-button" onClick={() => setCapturing(true)}>
               <span className="hum-button-ring" />
               <span className="hum-button-label">🎙<br />Hum it</span>
-              <span className="hum-pilot-pill">Pilot</span>
+              <span className="hum-pilot-pill">Beta</span>
             </button>
             <div className="hero-alt">
               <button className="mode-card" onClick={() => { setSearchMode("lyric"); setScreen("search"); }}>
@@ -151,11 +153,11 @@ export default function App() {
         <main className="page">
           <div className="results-head">
             <div className="results-kicker">{outcomeLabel}</div>
-            <h2 className="results-title">{outcome.pilot ? "Humming is in pilot right now" : outcome.matches.length ? "Is it one of these?" : "No match in the catalogue yet"}</h2>
+            <h2 className="results-title">{outcome.pilot ? "Humming is in pilot right now" : outcome.matches.length ? "Is it one of these?" : outcomeKind === "hum" ? "No match - hum it longer?" : "No match in the catalogue yet"}</h2>
             <div className={"provider-tag" + (outcome.demo ? " demo" : "")}>{outcome.provider}</div>
-            {(outcome.demo || outcome.pilot) && outcome.message && <p className="demo-note">{outcome.message}</p>}
+            {outcome.message && <p className="demo-note">{outcome.message}</p>}
           </div>
-          {!outcome.pilot && <RefineBar hints={hints} onChange={applyHints} />}
+          {outcomeKind !== "hum" && !outcome.pilot && <RefineBar hints={hints} onChange={applyHints} />}
           <div className="results-list">
             {outcome.matches.map((m, i) => (
               <SongCard key={m.song.id} match={m} rank={i + 1} onOpen={setDetail} />
@@ -197,10 +199,10 @@ export default function App() {
 
       {screen === "pilot" && (
         <main className="page">
-          <h2 className="section-title">The humming engine: pilot-gated</h2>
+          <h2 className="section-title">The humming engine: live in beta</h2>
           <div className="pilot-card">
             <h3>Where things stand</h3>
-            <p>Everything in DhunYaad works today except true melody matching. Humming recognition is wired behind a provider interface (<code>MusicIdProvider</code>) and currently in pilot - hums return an honest pilot notice, not guessed matches.</p>
+            <p>Humming recognition is live in beta: your hum goes to ACRCloud's query-by-humming engine (through our server proxy - credentials never touch your phone) and matches against a Bollywood reference database that is still growing. Early probes identified 11 of 12 tracks correctly, but real-world humming is the true test - expect misses while the reference set scales toward 500 tracks.</p>
             <h3>Why it's gated</h3>
             <p>Only one mature commercial humming API exists - ACRCloud query-by-humming - and its public humming database does not list Hindi. Google's hum-to-search has no public API at all. So Bollywood humming needs ACRCloud's custom-database option, and nobody should pay for that before it is proven on Bollywood melodies.</p>
             <h3>The go / no-go gate</h3>
@@ -211,7 +213,7 @@ export default function App() {
               <li>Go only if top-5 clears ~70%. Otherwise fall back to AudD as a second opinion and keep humming as "beta".</li>
             </ol>
             <h3>What flips on go</h3>
-            <p><code>AcrCloudHumProvider</code> is already stubbed in the codebase. Going live means a small server proxy (credentials never ship to the client) and a config flag - no UI changes.</p>
+            <p>Live now: <code>AcrCloudHumProvider</code> + the <code>/api/identify</code> server proxy on the ACRCloud free trial. The reference database and the blind human-hum test are still in progress - that is why the button says Beta.</p>
           </div>
         </main>
       )}

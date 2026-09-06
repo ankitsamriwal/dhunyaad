@@ -18,7 +18,7 @@ export function SongCard({ match, rank, onOpen }: { match: IdentifyMatch; rank: 
       <div className="song-rank">{rank}</div>
       <div className="song-main">
         <div className="song-title">{s.t}</div>
-        <div className="song-meta"><span className="song-movie">{s.m}</span><span className="dot">·</span>{s.y}</div>
+        <div className="song-meta"><span className="song-movie">{s.m}</span>{s.y > 0 && <><span className="dot">·</span>{s.y}</>}</div>
         <div className="song-artists">{s.s.join(", ")}</div>
         {match.note && <div className="song-note">{match.note}</div>}
       </div>
@@ -33,17 +33,19 @@ export function SongDetail({ song, onClose }: { song: Song; onClose: () => void 
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="sheet-handle" />
-        <div className="detail-kicker">{song.m} · {song.y}</div>
+        <div className="detail-kicker">{song.m}{song.y > 0 ? ` · ${song.y}` : ""}</div>
         <h2 className="detail-title">{song.t}</h2>
-        <div className="detail-lyric">
-          <span className="detail-lyric-mark">“</span>{song.l}
-          {song.d && <div className="detail-dev">{song.d}</div>}
-        </div>
+        {song.l && (
+          <div className="detail-lyric">
+            <span className="detail-lyric-mark">“</span>{song.l}
+            {song.d && <div className="detail-dev">{song.d}</div>}
+          </div>
+        )}
         <div className="detail-grid">
           <div><label>Singers</label><p>{song.s.join(", ")}</p></div>
           {song.md && <div><label>Music</label><p>{song.md}</p></div>}
-          <div><label>On screen</label><p>{song.a.join(", ")}</p></div>
-          <div><label>Mood</label><p>{song.mo.join(", ")}</p></div>
+          {song.a.length > 0 && <div><label>On screen</label><p>{song.a.join(", ")}</p></div>}
+          {song.mo.length > 0 && <div><label>Mood</label><p>{song.mo.join(", ")}</p></div>}
         </div>
         {song.sc && song.sc.length > 0 && (
           <div className="detail-scenes">
