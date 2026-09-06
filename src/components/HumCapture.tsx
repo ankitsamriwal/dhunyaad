@@ -12,16 +12,25 @@ export function HumCapture({ onDone, onCancel }: {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
 
+  const startedRef = useRef(false);
   useEffect(() => {
+    if (startedRef.current) return; // StrictMode double-mount guard
+    startedRef.current = true;
     let alive = true;
-    startCapture(setError).then((s) => { if (alive) setSession(s); });
+    startCapture(setError).then((s) => { if (alive && s) setSession(s); });
     return () => { alive = false; };
   }, []);
+
+  // timer independent of rAF (throttled in some environments)
+  useEffect(() => {
+    if (!session) return;
+    const iv = setInterval(() => setElapsed(Date.now() - session.startedAt), 250);
+    return () => clearInterval(iv);
+  }, [session]);
 
   useEffect(() => {
     if (!session) return;
     const tick = () => {
-      setElapsed(Date.now() - session.startedAt);
       const canvas = canvasRef.current;
       if (canvas) {
         const ctx = canvas.getContext("2d");
@@ -75,7 +84,7 @@ export function HumCapture({ onDone, onCancel }: {
       <div className="capture-actions">
         <button className="btn btn-ghost" onClick={() => { session?.cancel(); onCancel(); }}>Cancel</button>
         <button className="btn btn-primary" onClick={finish} disabled={!session || secs < 2}>
-          {secs < 2 ? "Listening…" : "Identify this dhun"}
+          {!session ? "Waiting for mic permission…" : secs < 2 ? "Listening…" : "Identify this dhun"}
         </button>
       </div>
     </div>
