@@ -87,6 +87,7 @@ export default function App() {
             <button className="hum-button" onClick={() => setCapturing(true)}>
               <span className="hum-button-ring" />
               <span className="hum-button-label">🎙<br />Hum it</span>
+              <span className="hum-pilot-pill">Pilot</span>
             </button>
             <div className="hero-alt">
               <button className="mode-card" onClick={() => { setSearchMode("lyric"); setScreen("search"); }}>
@@ -150,11 +151,11 @@ export default function App() {
         <main className="page">
           <div className="results-head">
             <div className="results-kicker">{outcomeLabel}</div>
-            <h2 className="results-title">{outcome.matches.length ? "Is it one of these?" : "No match in the catalogue yet"}</h2>
+            <h2 className="results-title">{outcome.pilot ? "Humming is in pilot right now" : outcome.matches.length ? "Is it one of these?" : "No match in the catalogue yet"}</h2>
             <div className={"provider-tag" + (outcome.demo ? " demo" : "")}>{outcome.provider}</div>
-            {outcome.demo && outcome.message && <p className="demo-note">{outcome.message}</p>}
+            {(outcome.demo || outcome.pilot) && outcome.message && <p className="demo-note">{outcome.message}</p>}
           </div>
-          <RefineBar hints={hints} onChange={applyHints} />
+          {!outcome.pilot && <RefineBar hints={hints} onChange={applyHints} />}
           <div className="results-list">
             {outcome.matches.map((m, i) => (
               <SongCard key={m.song.id} match={m} rank={i + 1} onOpen={setDetail} />
@@ -199,7 +200,7 @@ export default function App() {
           <h2 className="section-title">The humming engine: pilot-gated</h2>
           <div className="pilot-card">
             <h3>Where things stand</h3>
-            <p>Everything in DhunYaad works today except true melody matching. Humming recognition is wired behind a provider interface (<code>MusicIdProvider</code>) and currently served by a clearly-labelled demo matcher.</p>
+            <p>Everything in DhunYaad works today except true melody matching. Humming recognition is wired behind a provider interface (<code>MusicIdProvider</code>) and currently in pilot - hums return an honest pilot notice, not guessed matches.</p>
             <h3>Why it's gated</h3>
             <p>Only one mature commercial humming API exists - ACRCloud query-by-humming - and its public humming database does not list Hindi. Google's hum-to-search has no public API at all. So Bollywood humming needs ACRCloud's custom-database option, and nobody should pay for that before it is proven on Bollywood melodies.</p>
             <h3>The go / no-go gate</h3>

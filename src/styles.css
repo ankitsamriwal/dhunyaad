@@ -275,3 +275,19 @@ code { background: var(--card-2); padding: 1px 6px; border-radius: 6px; font-siz
   .hero-title { font-size: 36px; }
   .detail-grid { grid-template-columns: 1fr; }
 }
+
+/* Pilot pill on the hum button */
+.hum-button { position: relative; }
+.hum-pilot-pill {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #0b0a08;
+  background: #f5a623;
+  border-radius: 999px;
+  padding: 3px 8px;
+}

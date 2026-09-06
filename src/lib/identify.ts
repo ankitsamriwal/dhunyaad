@@ -14,6 +14,7 @@ export interface IdentifyOutcome {
   demo: boolean;
   matches: IdentifyMatch[];
   message?: string;
+  pilot?: boolean; // true while the ACRCloud pilot is running - no matches returned, honest notice shown
 }
 
 // The provider interface every music-ID backend plugs into.
@@ -85,7 +86,28 @@ export class AcrCloudHumProvider implements MusicIdProvider {
   }
 }
 
-export const activeProvider: MusicIdProvider = new DemoHumProvider();
+// Pilot provider: honest placeholder while the ACRCloud 500-track pilot runs.
+// Returns no matches - the UI shows the pilot notice instead of demo answers.
+export class PilotHumProvider implements MusicIdProvider {
+  readonly name = "Humming recognition - pilot in progress";
+  readonly isDemo = false;
+
+  async identify(_audio: Blob, _durationMs: number, _hints?: Hints): Promise<IdentifyOutcome> {
+    return {
+      provider: this.name,
+      demo: false,
+      pilot: true,
+      matches: [],
+      message:
+        "Real humming recognition is being piloted right now (ACRCloud query-by-humming with a custom Bollywood reference set - see the Pilot page). " +
+        "We don't show guessed matches. Lyric and scene search work today - try the words or the scene instead.",
+    };
+  }
+}
+
+// Active provider: pilot notice while the ACRCloud go/no-go pilot runs.
+// Flip to AcrCloudHumProvider (via the server proxy) on a "go" verdict.
+export const activeProvider: MusicIdProvider = new PilotHumProvider();
 
 // Lyric/scene "identify" path used when the user types instead of humming.
 export function identifyByText(query: string, mode: "lyric" | "scene", hints?: Hints): IdentifyOutcome {
