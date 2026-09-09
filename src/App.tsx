@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SONGS } from "./data/songs";
 import type { Song } from "./data/songs";
 import { HumCapture } from "./components/HumCapture";
@@ -28,6 +28,32 @@ export default function App() {
   const [query, setQuery] = useState("");
   const [history, setHistory] = useState(loadHistory());
   const [lastAudio, setLastAudio] = useState<{ blob: Blob; ms: number } | null>(null);
+
+  /* Android/browser Back: close detail first, then step back through screens, exit only at base */
+  const nav = useRef({ stack: [] as Array<{ screen: Screen; detail: Song | null }>, applying: false });
+  const navState = useRef<{ screen: Screen; detail: Song | null }>({ screen: "home", detail: null });
+  useEffect(() => {
+    const prev = navState.current;
+    if (prev.screen === screen && prev.detail === detail) return;
+    if (!nav.current.applying) {
+      nav.current.stack.push(prev);
+      try { window.history.pushState({ dh: 1 }, ""); } catch { /* ignore */ }
+    }
+    navState.current = { screen, detail };
+  }, [screen, detail]);
+  useEffect(() => {
+    const onPop = () => {
+      const prev = nav.current.stack.pop();
+      if (!prev) return; /* base screen: browser/app exits */
+      nav.current.applying = true;
+      setScreen(prev.screen);
+      setDetail(prev.detail);
+      navState.current = prev;
+      setTimeout(() => { nav.current.applying = false; }, 0);
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
 
   const goResults = (o: IdentifyOutcome, kind: "hum" | "lyric" | "scene", label: string) => {
     setOutcome(o); setOutcomeKind(kind); setOutcomeLabel(label); setHints({});
